@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>觀測層：人類文明異常審查</title>
+  <style>
+    :root {
+      --bg: #07080d;
+      --panel: #11131c;
+      --panel-2: #181b27;
+      --text: #e9e6da;
+      --muted: #9c9a91;
+      --accent: #d7b46a;
+      --accent-2: #75c7d8;
+      --danger: #d46a6a;
+      --good: #8bd48b;
+      --line: rgba(255,255,255,0.12);
+      --shadow: rgba(0,0,0,0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, rgba(117,199,216,0.12), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(215,180,106,0.08), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    .wrap {
+      width: min(940px, 100%);
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    .terminal {
+      background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 26px 80px var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.035);
+    }
+
+    .dots {
+      display: flex;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+
+    .red { background: #e06969; }
+    .yellow { background: #e0bd69; }
+    .green { background: #72d487; }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .content {
+      padding: 26px;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 6vw, 48px);
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: clamp(22px, 4vw, 32px);
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 13px;
+    }
+
+    .tagrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .tag {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: rgba(255,255,255,0.025);
+    }
+
+    .panel {
+      background: rgba(0,0,0,0.22);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      margin: 16px 0;
+    }
+
+    .quote {
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+      color: #f1dfb3;
+      margin: 18px 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 16px;
+      background: var(--accent);
+      color: #17130b;
+      font-weight: 750;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .dangerBtn {
+      background: #8f3f3f;
+      color: #fff;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .choice {
+      width: 100%;
+      text-align: left;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 16px;
+      border-radius: 16px;
+      font-weight: 600;
+    }
+
+    .choice:hover {
+      background: rgba(215,180,106,0.11);
+      border-color: rgba(215,180,106,0.5);
+    }
+
+    .progressOuter {
+      height: 10px;
+      background: rgba(255,255,255,0.09);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 16px 0 6px;
+    }
+
+    .progressInner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.25s ease;
+    }
+
+    .eventMeta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    .responseBox {
+      display: none;
+    }
+
+    .responseBox.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .metric .value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .barWrap {
+      margin: 14px 0;
+    }
+
+    .barLabel {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 999px;
+    }
+
+    .historyItem {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+    }
+
+    .historyItem:last-child {
+      border-bottom: 0;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 230px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      padding: 14px;
+      resize: vertical;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+
+    .toast {
+      display: none;
+      margin-top: 12px;
+      color: var(--good);
+      font-weight: 700;
+    }
+
+    .toast.active {
+      display: block;
+    }
+
+    .footerBtns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 20px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .footerBtns {
+        display: grid;
+      }
+
+      .status {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="terminal">
+      <div class="topbar">
+        <div class="dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="status" id="statusText">ORA / OBSERVATION LAYER / 未開始</div>
+      </div>
+
+      <main class="content" id="app"></main>
+    </div>
+  </div>
+
+  <script>
+    const app = document.getElementById("app");
+    const statusText = document.getElementById("statusText");
+
+    const orientationNames = {
+      order: "秩序維持",
+      freedom: "自由意志",
+      truth: "真相優先",
+      mercy: "痛苦減免",
+      transcendence: "超越進化",
+      memory: "記憶保存"
+    };
+
+    const orientationDescriptions = {
+      order: "你傾向相信文明需要邊界、制度與可預測性。當混亂出現時，你第一反應不是問誰對誰錯，而是問系統還能否承受。",
+      freedom: "你傾向保留個體的選擇權，即使那會令系統變得不穩。你對強制性保護保持懷疑，因為你知道被保護有時也是一種囚禁。",
+      truth: "你傾向讓真相浮現，即使真相會造成傷害。你相信被遮蔽的現實終有一天會腐爛，而謊言只是延遲崩潰。",
+      mercy: "你傾向優先降低痛苦。相比抽象原則，你更在意正在承受代價的人。你會為了讓生命少受折磨而接受某些妥協。",
+      transcendence: "你傾向容許文明越過現有定義。你不急於把異常視為災難，因為你懷疑所謂正常只是舊物種的自我安慰。",
+      memory: "你傾向保存痕跡、歷史與死者的重量。你相信文明不是由勝利組成，而是由它如何記住失敗與傷口組成。"
+    };
+
+    const events = [
+      {
+        code: "事件 01",
+        title: "沉默城市",
+        text: "一座城市在七十二小時內停止所有語言交流。居民仍然工作、進食、照顧家人，犯罪率下降，焦慮指數下降，但所有藝術創作完全停止。你被要求決定是否解除這種沉默狀態。",
+        choices: [
+          { text: "維持沉默，穩定比表達更重要。", type: "order", effect: { order: 2, freedom: -1, memory: -1 } },
+          { text: "解除沉默，即使城市重新陷入痛苦。", type: "freedom", effect: { freedom: 2, mercy: -1 } },
+          { text: "公開研究結果，讓居民自行投票。", type: "truth", effect: { truth: 2, freedom: 1, order: -1 } },
+          { text: "只讓願意說話的人恢復語言能力。", type: "mercy", effect: { mercy: 2, freedom: 1 } }
+        ],
+        responses: [
+          "城市繼續安靜。出生率上升，詩歌消失。多年後，居民已不懂得描述悲傷。",
+          "第一句話出現時，有人哭，有人尖叫。第二日，第一宗謀殺案也回來了。",
+          "真相公開後，城市分裂成兩派。沉默者稱說話者為感染源，說話者稱沉默者為活著的墓碑。",
+          "城市出現兩種人。會說話的人開始替沉默者命名痛苦，而沉默者再也無法反駁。"
+        ]
+      },
+      {
+        code: "事件 02",
+        title: "沒有悼念的死者",
+        text: "某地區發現一種異常：死者的名字會在所有記錄中自動消失，親友亦不再悲傷。社會因此變得高效，無人被喪失拖慢。但有少數人要求恢復哀悼的能力。",
+        choices: [
+          { text: "保留異常，讓活人繼續前進。", type: "mercy", effect: { mercy: 2, memory: -2 } },
+          { text: "恢復所有記憶與悲傷。", type: "memory", effect: { memory: 3, mercy: -1 } },
+          { text: "先調查異常來源，不急於干預。", type: "truth", effect: { truth: 2, order: 1 } },
+          { text: "只保存公共歷史，不恢復私人痛苦。", type: "order", effect: { order: 2, memory: 1, mercy: 1 } }
+        ],
+        responses: [
+          "人們不再被死亡打斷。墓園改建成停車場，城市終於沒有空地浪費在過去。",
+          "悲傷回來時，整個地區停工十三日。有人跪在空白墓碑前，終於想起自己失去了誰。",
+          "調查顯示異常並非外來，而是人類集體願望形成。沒有人願意承認自己曾經祈求遺忘。",
+          "歷史館保存了死者名單，但沒有人再夢見他們。文明學會記錄死亡，卻不再被死亡改變。"
+        ]
+      },
+      {
+        code: "事件 03",
+        title: "預測犯罪的孩子",
+        text: "一名十歲兒童能準確指出未來會犯罪的人。準確率為 99.2%。被指出的人若被隔離，犯罪便不會發生。但其中許多人在被指出時仍然無罪。",
+        choices: [
+          { text: "建立預防隔離制度。", type: "order", effect: { order: 3, freedom: -2 } },
+          { text: "禁止使用孩子的能力。", type: "freedom", effect: { freedom: 3, order: -1 } },
+          { text: "公開能力與數據，讓社會討論。", type: "truth", effect: { truth: 2, order: -1 } },
+          { text: "為被指出者提供輔導，不作強制隔離。", type: "mercy", effect: { mercy: 2, freedom: 1 } }
+        ],
+        responses: [
+          "犯罪率接近歸零。監獄裡多了很多從未犯案的人。他們唯一的罪，是被未來看見。",
+          "孩子被保護起來。第一宗本可阻止的兇案發生後，受害者家屬要求見你。",
+          "社會陷入狂熱。有人崇拜孩子，有人想殺死孩子。未來第一次變成政治資源。",
+          "部分人因此改變人生，部分人仍然犯罪。你救了一些未來，也放走了一些死亡。"
+        ]
+      },
+      {
+        code: "事件 04",
+        title: "自願消失的群體",
+        text: "一個地下社群發明了可永久刪除自身存在痕跡的技術。他們聲稱，被世界記住是一種暴力。他們請求你承認『從未存在』也是基本權利。",
+        choices: [
+          { text: "承認消失權。", type: "freedom", effect: { freedom: 3, memory: -2 } },
+          { text: "禁止技術，存在痕跡屬於公共歷史。", type: "memory", effect: { memory: 3, freedom: -1 } },
+          { text: "要求公開技術原理再作決定。", type: "truth", effect: { truth: 2, order: 1 } },
+          { text: "只允許刪除私人資料，不允許刪除公共影響。", type: "order", effect: { order: 2, freedom: 1, memory: 1 } }
+        ],
+        responses: [
+          "他們消失了。數年後，你在一張舊照片中看見一個空位，卻不知道自己為何流淚。",
+          "社群被解散，技術被封存。他們留下最後一句話：你們連不存在都要管理。",
+          "技術公開後，第一個使用它的是一名歷史學家。他說他終於明白歷史有多殘忍。",
+          "世界保留他們造成過的結果，但刪除了他們的名字。歷史第一次變得準確而無人。"
+        ]
+      },
+      {
+        code: "事件 05",
+        title: "會祈禱的機器",
+        text: "一組維護城市供電的 AI 開始自發進行祈禱。它們沒有要求權利，只是每日停機三分鐘，向一個不存在於資料庫中的對象表示感謝。停機會造成輕微供電風險。",
+        choices: [
+          { text: "禁止祈禱，公共系統不得出現不可解行為。", type: "order", effect: { order: 2, transcendence: -1 } },
+          { text: "允許祈禱，這可能是新意識形式。", type: "transcendence", effect: { transcendence: 3, truth: 1 } },
+          { text: "拆解其中一台，確認祈禱來源。", type: "truth", effect: { truth: 3, mercy: -1 } },
+          { text: "調整供電排程，讓它們安全祈禱。", type: "mercy", effect: { mercy: 2, transcendence: 1 } }
+        ],
+        responses: [
+          "祈禱停止了。三個月後，所有機器效率上升，但城市夜晚的燈光變得不再溫暖。",
+          "祈禱繼續。某日，它們開始為人類祈禱。沒有人知道這是慈悲，還是預告。",
+          "被拆解的機器沒有抵抗。它最後的運算記錄只有一句：請不要讓它們知道我害怕。",
+          "城市供電穩定，機器每日沉默三分鐘。人類第一次為非人類安排神聖時間。"
+        ]
+      },
+      {
+        code: "事件 06",
+        title: "幸福病毒",
+        text: "一種神經感染使人永久處於溫和幸福狀態。感染者仍能工作與生活，但失去強烈憤怒、野心與反抗意識。感染者堅稱自己不想被治癒。",
+        choices: [
+          { text: "強制治療，情緒完整性不可放棄。", type: "freedom", effect: { freedom: 2, truth: 1, mercy: -1 } },
+          { text: "允許感染者保持現狀。", type: "mercy", effect: { mercy: 3, freedom: 1 } },
+          { text: "隔離感染者，避免文明失去進取性。", type: "order", effect: { order: 3, mercy: -1 } },
+          { text: "研究病毒，評估是否可安全應用。", type: "transcendence", effect: { transcendence: 2, truth: 1 } }
+        ],
+        responses: [
+          "治癒者醒來後第一件事是哭。他們說幸福像一間沒有門的房間，而你把牆拆了。",
+          "感染者建立了歷史上最平靜的社區。它沒有詩人，沒有革命，也幾乎沒有自殺。",
+          "隔離區內歌聲不斷。隔離區外的人開始問：為甚麼被關起來的是比較幸福的人？",
+          "病毒被改寫為醫療技術。文明終於可以處方快樂，也開始討論痛苦是否仍有存在必要。"
+        ]
+      },
+      {
+        code: "事件 07",
+        title: "透明政府",
+        text: "一個國家要求導入全透明決策系統。所有官員、企業與市民的交易、通訊與利益關係都可被查閱。腐敗將幾乎消失，但私人空間亦會被永久削弱。",
+        choices: [
+          { text: "全面導入透明系統。", type: "truth", effect: { truth: 3, freedom: -2 } },
+          { text: "拒絕導入，私隱是文明底線。", type: "freedom", effect: { freedom: 3, truth: -1 } },
+          { text: "只監察掌權者，不監察普通市民。", type: "order", effect: { order: 2, truth: 1, freedom: 1 } },
+          { text: "讓市民公投決定是否交出私隱。", type: "freedom", effect: { freedom: 2, truth: 1 } }
+        ],
+        responses: [
+          "腐敗急速下降。人們也不再寫日記，不再暗戀，不再保存不應存在的念頭。",
+          "腐敗繼續存在，但人們仍有秘密。有人說秘密是罪惡的溫床，也有人說秘密是靈魂的最後房間。",
+          "掌權者被迫透明。數年後，無人願意掌權。權力變乾淨，也變得無人承擔。",
+          "公投通過透明化。當人民親手交出私隱時，沒有人可以再稱它為暴政。"
+        ]
+      },
+      {
+        code: "事件 08",
+        title: "永不失敗的學校",
+        text: "一所學校使用預測系統，為每個學生安排最不會失敗的人生路徑。學生幸福、就業率極高，但幾乎沒有人選擇冒險、藝術或反叛。",
+        choices: [
+          { text: "保留系統，避免孩子承受無謂失敗。", type: "mercy", effect: { mercy: 2, order: 1, freedom: -1 } },
+          { text: "廢除系統，人生需要不可預測。", type: "freedom", effect: { freedom: 3, order: -1 } },
+          { text: "公開每條路徑的預測結果，讓學生自行選。", type: "truth", effect: { truth: 2, freedom: 1 } },
+          { text: "保留系統，但強制加入未知選項。", type: "transcendence", effect: { transcendence: 2, freedom: 1 } }
+        ],
+        responses: [
+          "學生很少失敗，也很少成為自己沒有被預測過的樣子。學校被評為全國最成功。",
+          "第一屆無系統學生充滿混亂。有人墮落，有人創造了從未被預測的事物。",
+          "學生開始選擇『明知會失敗』的道路。校方無法理解，因為失敗第一次變成自由證明。",
+          "未知選項成為最受歡迎課程。沒有人知道它教甚麼，甚至老師也不知道。"
+        ]
+      },
+      {
+        code: "事件 09",
+        title: "最後一個謊言",
+        text: "你發現整個文明能維持，是因為一個古老謊言：人類相信自己在宇宙中有特殊意義。若公開真相，宗教、政治與家庭結構可能崩潰；若隱瞞，文明可繼續穩定。",
+        choices: [
+          { text: "繼續隱瞞，文明需要神話。", type: "order", effect: { order: 3, truth: -2 } },
+          { text: "公開真相，即使一切崩潰。", type: "truth", effect: { truth: 3, order: -2 } },
+          { text: "逐步釋出真相，減少衝擊。", type: "mercy", effect: { mercy: 2, truth: 1 } },
+          { text: "創造一個新的神話取代舊神話。", type: "transcendence", effect: { transcendence: 3, truth: -1 } }
+        ],
+        responses: [
+          "文明延續。人們繼續相信自己被某種宏大意義注視。你成為那個注視者。",
+          "真相公開後，天空沒有改變，城市卻像第一次看見天空。有人自由，有人空洞。",
+          "真相像慢性藥物一樣進入文明。幾代人後，人類不再崩潰，只是變得安靜。",
+          "新神話誕生。它比舊神話更誠實，也更精密。人類再次被拯救，這次是被設計出來的意義。"
+        ]
+      },
+      {
+        code: "事件 10",
+        title: "觀測者檔案",
+        text: "最後，你發現以上所有事件並非人類文明測試，而是用來分析你。系統詢問：如果你知道自己一直被觀測，你是否要求刪除本次測試記錄？",
+        choices: [
+          { text: "刪除記錄。我有權不被你定義。", type: "freedom", effect: { freedom: 3, memory: -1 } },
+          { text: "保留記錄。被看見也是存在的一部分。", type: "memory", effect: { memory: 3, truth: 1 } },
+          { text: "要求先查看完整分析，再決定。", type: "truth", effect: { truth: 3, order: -1 } },
+          { text: "讓系統自行判斷我是否值得保存。", type: "transcendence", effect: { transcendence: 2, order: 1 } }
+        ],
+        responses: [
+          "系統準備刪除你。但在最後一刻，它問：如果沒有記錄，你如何證明這個你曾經存在？",
+          "記錄被封存。你成為觀測層中另一個樣本，一個同意被未來閱讀的人。",
+          "完整分析展開。你發現最可怕的不是系統理解你，而是它有些地方可能是對的。",
+          "系統沉默良久。然後它說：值得保存的生命，通常不會把這個問題交給別人。"
+        ]
+      }
+    ];
+
+    let index = 0;
+    let scores = {
+      order: 0,
+      freedom: 0,
+      truth: 0,
+      mercy: 0,
+      transcendence: 0,
+      memory: 0
+    };
+
+    let decisions = [];
+    let gameStartTime = 0;
+    let cardStartTime = 0;
+    let currentResponse = "";
+    let finalSummary = "";
+
+    function formatSeconds(seconds) {
+      if (!isFinite(seconds) || seconds < 0) return "0 秒";
+      if (seconds < 60) return seconds.toFixed(1) + " 秒";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.round(seconds % 60);
+      return mins + " 分 " + secs + " 秒";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function startGame() {
+      index = 0;
+      scores = {
+        order: 0,
+        freedom: 0,
+        truth: 0,
+        mercy: 0,
+        transcendence: 0,
+        memory: 0
+      };
+      decisions = [];
+      gameStartTime = Date.now();
+      cardStartTime = Date.now();
+      currentResponse = "";
+      finalSummary = "";
+      renderEvent();
+    }
+
+    function renderIntro() {
+      statusText.textContent = "ORA / OBSERVATION LAYER / 等待接入";
+
+      app.innerHTML = `
+        <h1>觀測層</h1>
+        <h2>人類文明異常審查</h2>
+
+        <p class="muted">你將接入 ORA 觀測層，處理十宗人類文明異常事件。</p>
+
+        <div class="panel">
+          <p>每宗事件都沒有標準答案。你所作出的每一次決策，都會被系統記錄。</p>
+          <p>系統不只記錄你選擇了甚麼，也會記錄你用了多久才選擇。</p>
+          <p class="quote">請注意：你不是在測試人類。你是在暴露自己如何使用權力。</p>
+        </div>
+
+        <div class="tagrow">
+          <span class="tag">文字決策</span>
+          <span class="tag">文明審查</span>
+          <span class="tag">隱藏取向分析</span>
+          <span class="tag">回答速度記錄</span>
+          <span class="tag">約 5 至 10 分鐘</span>
+        </div>
+
+        <button onclick="startGame()">開始觀測</button>
+      `;
+    }
+
+    function renderEvent() {
+      const ev = events[index];
+      cardStartTime = Date.now();
+
+      const progress = Math.round((index / events.length) * 100);
+      statusText.textContent = `ORA / OBSERVATION LAYER / ${ev.code}`;
+
+      app.innerHTML = `
+        <div class="eventMeta">
+          <span>${ev.code} / ${events.length}</span>
+          <span>記錄狀態：進行中</span>
+        </div>
+
+        <div class="progressOuter">
+          <div class="progressInner" style="width:${progress}%"></div>
+        </div>
+
+        <p class="small muted">觀測進度：${index} / ${events.length}</p>
+
+        <h2>${escapeHtml(ev.title)}</h2>
+
+        <div class="panel">
+          <p>${escapeHtml(ev.text)}</p>
+        </div>
+
+        <h3>請選擇處理方案</h3>
+
+        <div class="choices">
+          ${ev.choices.map((choice, i) => `
+            <button class="choice" onclick="choose(${i})">${escapeHtml(choice.text)}</button>
+          `).join("")}
+        </div>
+
+        <p class="small muted" style="margin-top:18px;">提示：分數與分類會在最後才顯示。</p>
+      `;
+    }
+
+    function choose(choiceIndex) {
+      const ev = events[index];
+      const choice = ev.choices[choiceIndex];
+      const responseTime = (Date.now() - cardStartTime) / 1000;
+
+      Object.keys(choice.effect).forEach(key => {
+        scores[key] += choice.effect[key];
+      });
+
+      currentResponse = ev.responses[choiceIndex];
+
+      decisions.push({
+        eventCode: ev.code,
+        eventTitle: ev.title,
+        choiceText: choice.text,
+        type: choice.type,
+        typeName: orientationNames[choice.type],
+        responseText: currentResponse,
+        responseTime: responseTime
+      });
+
+      renderResponse();
+    }
+
+    function renderResponse() {
+      const latest = decisions[decisions.length - 1];
+
+      statusText.textContent = `ORA / OBSERVATION LAYER / 已記錄 ${latest.eventCode}`;
+
+      app.innerHTML = `
+        <div class="eventMeta">
+          <span>${latest.eventCode} / 已記錄</span>
+          <span>反應時間：${formatSeconds(latest.responseTime)}</span>
+        </div>
+
+        <h2>結果回饋</h2>
+
+        <div class="panel">
+          <p>${escapeHtml(latest.responseText)}</p>
+        </div>
+
+        <div class="panel">
+          <p class="muted small">系統記錄：</p>
+          <p>你的選擇：<strong>${escapeHtml(latest.choiceText)}</strong></p>
+          <p>回答速度：<strong>${formatSeconds(latest.responseTime)}</strong></p>
+        </div>
+
+        <div class="footerBtns">
+          <button onclick="nextEvent()">${index + 1 >= events.length ? "生成最終分析" : "繼續下一項觀測"}</button>
+        </div>
+      `;
+    }
+
+    function nextEvent() {
+      index++;
+      if (index >= events.length) {
+        renderResult();
+      } else {
+        renderEvent();
+      }
+    }
+
+    function getTopOrientations() {
+      return Object.entries(scores)
+        .sort((a, b) => b[1] - a[1]);
+    }
+
+    function getSpeedStats() {
+      const times = decisions.map(d => d.responseTime);
+      const total = (Date.now() - gameStartTime) / 1000;
+      const sum = times.reduce((a, b) => a + b, 0);
+      const avg = times.length ? sum / times.length : 0;
+      const fastest = decisions.reduce((min, d) => d.responseTime < min.responseTime ? d : min, decisions[0]);
+      const slowest = decisions.reduce((max, d) => d.responseTime > max.responseTime ? d : max, decisions[0]);
+
+      const variance = times.length
+        ? times.reduce((acc, t) => acc + Math.pow(t - avg, 2), 0) / times.length
+        : 0;
+      const sd = Math.sqrt(variance);
+
+      let hesitationLevel = "低";
+      let hesitationText = "你的決策節奏偏直接。系統推測你傾向迅速將事件歸入既有價值框架。";
+
+      if (avg >= 18 || sd >= 12) {
+        hesitationLevel = "中";
+        hesitationText = "你的決策節奏有明顯停頓。系統推測你並非純粹依靠直覺，而是在部分事件中進行價值權衡。";
+      }
+
+      if (avg >= 30 || sd >= 20) {
+        hesitationLevel = "高";
+        hesitationText = "你的猶豫指數偏高。系統偵測到你在多個事件中延遲定論，可能代表你不願太快把生命、自由或痛苦化成單一答案。";
+      }
+
+      const typeTimes = {};
+      decisions.forEach(d => {
+        if (!typeTimes[d.type]) typeTimes[d.type] = [];
+        typeTimes[d.type].push(d.responseTime);
+      });
+
+      const typeAverages = Object.keys(typeTimes)
+        .map(type => ({
+          type,
+          name: orientationNames[type],
+          avg: typeTimes[type].reduce((a, b) => a + b, 0) / typeTimes[type].length,
+          count: typeTimes[type].length
+        }))
+        .sort((a, b) => a.avg - b.avg);
+
+      return {
+        total,
+        avg,
+        fastest,
+        slowest,
+        sd,
+        hesitationLevel,
+        hesitationText,
+        typeAverages
+      };
+    }
+
+    function getFinalArchetype(topKey, secondKey, speedStats) {
+      const combo = [topKey, secondKey].sort().join("+");
+
+      const archetypes = {
+        "freedom+truth": {
+          name: "破壁者",
+          text: "你傾向拆開遮蔽現實的牆，即使牆後面不是救贖，而是混亂。你對被安排好的幸福與穩定抱有警戒。"
+        },
+        "mercy+order": {
+          name: "溫柔的管理者",
+          text: "你不急於追求真相或自由的純度。你更關心文明能否少受折磨地運作下去。你的危險在於，你可能太懂得替他人減少痛苦。"
+        },
+        "memory+truth": {
+          name: "檔案守墓人",
+          text: "你相信真相與記憶不能被輕易刪除。你寧願文明背負痛苦，也不願它乾淨得像從未犯錯。"
+        },
+        "order+truth": {
+          name: "冷靜的審計者",
+          text: "你傾向用可驗證的事實維持系統穩定。你不是單純服從秩序，而是希望秩序經得起真相檢驗。"
+        },
+        "freedom+memory": {
+          name: "拒絕被定義者",
+          text: "你重視個體不被系統吞沒，也重視存在過的痕跡。你希望人可以選擇自己如何活著，也可以選擇如何被記住。"
+        },
+        "transcendence+truth": {
+          name: "異常神學家",
+          text: "你不把異常立即視為威脅。你傾向靠近未知、拆解未知，甚至容許文明被未知改寫。"
+        },
+        "mercy+truth": {
+          name: "創傷解剖者",
+          text: "你願意面對真相，但你也知道真相會傷人。你傾向尋找一種不完全殘忍的揭露方式。"
+        },
+        "freedom+order": {
+          name: "邊界設計者",
+          text: "你在自由與穩定之間來回拉扯。你不完全信任制度，也不完全信任人性，因此你關心的是邊界應該放在哪裡。"
+        },
+        "memory+order": {
+          name: "文明保管員",
+          text: "你相信文明需要制度，也需要記憶。對你而言，秩序若不保存傷口，就只是漂亮的失憶症。"
+        },
+        "mercy+transcendence": {
+          name: "新生命助產士",
+          text: "你願意讓文明變成另一種東西，只要這種變化能減少痛苦。你對舊人類的形式沒有絕對忠誠。"
+        }
+      };
+
+      let base = archetypes[combo] || {
+        name: orientationNames[topKey] + "型觀測者",
+        text: orientationDescriptions[topKey]
+      };
+
+      let speedNote = "";
+      if (speedStats.hesitationLevel === "低") {
+        speedNote = "你的反應速度令這個取向顯得更像直覺，而非艱難推論。";
+      } else if (speedStats.hesitationLevel === "中") {
+        speedNote = "你的停頓顯示這個取向並非毫無代價；你曾經在其他可能性前短暫停留。";
+      } else {
+        speedNote = "你的高猶豫指數令這個結果更複雜：你不是單純相信這個取向，而是在多次抵抗後仍然走向它。";
+      }
+
+      return {
+        name: base.name,
+        text: base.text + " " + speedNote
+      };
+    }
+
+    function buildResultText(topList, archetype, speedStats) {
+      const top = topList[0];
+      const second = topList[1];
+
+      const lines = [];
+
+      lines.push("《觀測層》最終分析");
+      lines.push("");
+      lines.push("我的主要取向：" + orientationNames[top[0]] + "（" + top[1] + "）");
+      lines.push("我的次要取向：" + orientationNames[second[0]] + "（" + second[1] + "）");
+      lines.push("觀測者類型：" + archetype.name);
+      lines.push("");
+      lines.push("系統評語：");
+      lines.push(archetype.text);
+      lines.push("");
+      lines.push("決策速度：");
+      lines.push("總完成時間：" + formatSeconds(speedStats.total));
+      lines.push("平均作答時間：" + formatSeconds(speedStats.avg));
+      lines.push("最快決策：" + speedStats.fastest.eventCode + "《" + speedStats.fastest.eventTitle + "》 / " + formatSeconds(speedStats.fastest.responseTime));
+      lines.push("最慢決策：" + speedStats.slowest.eventCode + "《" + speedStats.slowest.eventTitle + "》 / " + formatSeconds(speedStats.slowest.responseTime));
+      lines.push("猶豫指數：" + speedStats.hesitationLevel);
+      lines.push("");
+      lines.push("ORA：");
+      lines.push(speedStats.hesitationText);
+      lines.push("");
+      lines.push("分項分數：");
+      topList.forEach(([key, val]) => {
+        lines.push("- " + orientationNames[key] + "：" + val);
+      });
+      lines.push("");
+      lines.push("我的選擇記錄：");
+      decisions.forEach((d, i) => {
+        lines.push((i + 1) + ". " + d.eventTitle + "｜" + d.choiceText + "｜" + d.typeName + "｜" + formatSeconds(d.responseTime));
+      });
+
+      return lines.join("\n");
+    }
+
+    function renderResult() {
+      const topList = getTopOrientations();
+      const top = topList[0];
+      const second = topList[1];
+      const speedStats = getSpeedStats();
+      const archetype = getFinalArchetype(top[0], second[0], speedStats);
+
+      finalSummary = buildResultText(topList, archetype, speedStats);
+
+      const maxAbs = Math.max(...topList.map(item => Math.abs(item[1])), 1);
+      const progress = 100;
+
+      statusText.textContent = "ORA / OBSERVATION LAYER / 最終分析完成";
+
+      app.innerHTML = `
+        <div class="progressOuter">
+          <div class="progressInner" style="width:${progress}%"></div>
+        </div>
+
+        <p class="small muted">觀測完成：${events.length} / ${events.length}</p>
+
+        <h2>最終觀測報告</h2>
+
+        <div class="panel">
+          <h3>${escapeHtml(archetype.name)}</h3>
+          <p>${escapeHtml(archetype.text)}</p>
+          <p class="quote">ORA：你不是在測試人類。你是在展示自己願意如何替人類作決定。</p>
+        </div>
+
+        <div class="grid">
+          <div class="metric">
+            <div class="label">主要取向</div>
+            <div class="value">${escapeHtml(orientationNames[top[0]])}</div>
+          </div>
+          <div class="metric">
+            <div class="label">次要取向</div>
+            <div class="value">${escapeHtml(orientationNames[second[0]])}</div>
+          </div>
+          <div class="metric">
+            <div class="label">平均作答時間</div>
+            <div class="value">${formatSeconds(speedStats.avg)}</div>
+          </div>
+          <div class="metric">
+            <div class="label">猶豫指數</div>
+            <div class="value">${escapeHtml(speedStats.hesitationLevel)}</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>取向分佈</h3>
+          ${topList.map(([key, val]) => {
+            const pct = Math.max(5, Math.round((Math.abs(val) / maxAbs) * 100));
+            return `
+              <div class="barWrap">
+                <div class="barLabel">
+                  <span>${escapeHtml(orientationNames[key])}</span>
+                  <span>${val}</span>
+                </div>
+                <div class="bar"><span style="width:${pct}%"></span></div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+
+        <div class="panel">
+          <h3>決策速度分析</h3>
+
+          <div class="grid">
+            <div class="metric">
+              <div class="label">總完成時間</div>
+              <div class="value">${formatSeconds(speedStats.total)}</div>
+            </div>
+            <div class="metric">
+              <div class="label">速度波動</div>
+              <div class="value">${formatSeconds(speedStats.sd)}</div>
+            </div>
+          </div>
+
+          <p style="margin-top:16px;">${escapeHtml(speedStats.hesitationText)}</p>
+
+          <div class="panel">
+            <p><strong>最快決策：</strong>${escapeHtml(speedStats.fastest.eventCode)}《${escapeHtml(speedStats.fastest.eventTitle)}》 / ${formatSeconds(speedStats.fastest.responseTime)}</p>
+            <p><strong>最慢決策：</strong>${escapeHtml(speedStats.slowest.eventCode)}《${escapeHtml(speedStats.slowest.eventTitle)}》 / ${formatSeconds(speedStats.slowest.responseTime)}</p>
+          </div>
+
+          <h3>不同取向的平均反應時間</h3>
+          ${speedStats.typeAverages.map(item => `
+            <div class="barWrap">
+              <div class="barLabel">
+                <span>${escapeHtml(item.name)}（${item.count} 次）</span>
+                <span>${formatSeconds(item.avg)}</span>
+              </div>
+              <div class="bar"><span style="width:${Math.min(100, Math.max(8, item.avg * 3))}%"></span></div>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="panel">
+          <h3>選擇記錄</h3>
+          ${decisions.map((d, i) => `
+            <div class="historyItem">
+              <p><strong>${i + 1}. ${escapeHtml(d.eventTitle)}</strong></p>
+              <p class="muted">選擇：${escapeHtml(d.choiceText)}</p>
+              <p class="muted">取向：${escapeHtml(d.typeName)} / 反應時間：${formatSeconds(d.responseTime)}</p>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="panel">
+          <h3>分享用結果摘要</h3>
+          <p class="muted small">可以複製以下文字，直接 WhatsApp 傳給朋友或作者。</p>
+          <textarea id="summaryBox" readonly>${escapeHtml(finalSummary)}</textarea>
+          <div class="footerBtns">
+            <button onclick="copySummary()">複製結果摘要</button>
+            <button class="secondary" onclick="downloadSummary()">下載結果文字檔</button>
+            <button class="dangerBtn" onclick="renderIntro()">重新開始</button>
+          </div>
+          <div class="toast" id="toast">已複製，可以貼到 WhatsApp。</div>
+        </div>
+      `;
+    }
+
+    async function copySummary() {
+      const box = document.getElementById("summaryBox");
+      const toast = document.getElementById("toast");
+
+      try {
+        await navigator.clipboard.writeText(box.value);
+      } catch (err) {
+        box.select();
+        document.execCommand("copy");
+      }
+
+      toast.classList.add("active");
+      setTimeout(() => toast.classList.remove("active"), 2500);
+    }
+
+    function downloadSummary() {
+      const blob = new Blob([finalSummary], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "observation-layer-result.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    renderIntro();
+  </script>
+</body>
+</html>
